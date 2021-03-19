@@ -28,19 +28,45 @@ board.MICROPHONE_DATA
 board.SPEAKER_ENABLE
 """
 import time
-from adafruit_circuitplayground import cp
+#from adafruit_circuitplayground import cp
 from adafruit_circuitplayground.express import cpx
 import touchio
+import audiobusio
+import array
 import simpleio
 import board
+import math
 
-cp.pixels.auto_write = False
-cp.pixels.brightness = 0.3
+
+cpx.pixels.auto_write = False
+#cp.pixels.brightness = 0.3
 cpx.pixels.brightness = 0.2
 touch = touchio.TouchIn(board.A1)
 
 DRY_VALUE = 1500  # calibrate this by hand!
 WET_VALUE = 2100  # calibrate this by hand!
+
+NUM_SAMPLES = 160
+
+
+def normalized_rms(values):
+    minbuf = int(mean(values))
+    samples_sum = sum(
+        float(sample - minbuf) * (sample - minbuf)
+        for sample in values
+    )
+
+    return math.sqrt(samples_sum / len(values))
+
+
+def mean(values):
+    return sum(values) / len(values)
+mic = audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA,
+                       sample_rate=16000, bit_depth=16)
+samples = array.array('H', [0] * NUM_SAMPLES)
+mic.record(samples, len(samples))
+# Set lowest level to expect, plus a little.
+input_floor = normalized_rms(samples) + 10
 
 
 def scale_range(value):
@@ -50,20 +76,38 @@ def scale_range(value):
 
 
 while True:
-    peak = scale_range(cp.light)
-    print(cp.light)
-    print(cp.temperature * 1.8 + 32)
-    x, y, z = cp.acceleration
-    print((x, y, z))
+    peak = scale_range(cpx.light)
+    print("light:",cpx.light)
+    print("temperature:",cpx.temperature * 1.8 + 32)
+    X = 0
+    Y = 0
+    Z = 0
+    for count in range(10):
+        x,y,z = cpx.acceleration
+        X = X + x
+        Y = Y + y
+        Z = Z + z
+        time.sleep(0.01)
+    X = X / 10
+    Y = Y / 10
+    Z = Z / 10
+    print("acceleration:",x, y, z)
+    XYangle = (math.atan2(-X,Y))*57.3
+    YZangle = (math.atan2(-Y,Z))*57.3
+    ZXangle = (math.atan2(-Z,X))*57.3
+    print("angle:",XYangle,YZangle,ZXangle)
     value_A1 = touch.raw_value
     # fill the pixels from red to green based on soil moisture
     humidity = int(simpleio.map_range(value_A1, DRY_VALUE, WET_VALUE, 0, 100))
-    print( humidity)
+    print("humidity:", humidity)
+    mic.record(samples, len(samples))
+    magnitude = normalized_rms(samples)
+    print("Sound level:", magnitude)
 
     for i in range(10):
         if i <= peak:
-            cp.pixels[i] = (50,50 , 50)
+            cpx.pixels[i] = (50,50 , 50)
         else:
-            cp.pixels[i] = (0, 0, 0)
-    cp.pixels.show()
-    time.sleep(0.5)
+            cpx.pixels[i] = (0, 0, 0)
+    cpx.pixels.show()
+    time.sleep(0.4)

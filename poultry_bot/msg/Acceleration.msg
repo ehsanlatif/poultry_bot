@@ -1,0 +1,3 @@
+float32 x_acceleration
+float32 y_acceleration
+float32 z_acceleration

@@ -52,6 +52,10 @@ add_message_files(
    FILES
    Temperature.msg
    Light.msg
+   Acceleration.msg
+   Angle.msg
+   Humidity.msg
+   Sound.msg
 )
 
 ## Generate services in the 'srv' folder

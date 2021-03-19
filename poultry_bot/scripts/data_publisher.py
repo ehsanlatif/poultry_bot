@@ -56,28 +56,66 @@
 #!/usr/bin/env python
 #import roslib; roslib.load_manifest('numpy_tutorials') #not sure why I need this
 import rospy
-# from std_msgs.msg import String
-from poultry_bot.msg import Temperature,Light
+from std_msgs.msg import String
+from poultry_bot.msg import Temperature,Light,Acceleration,Angle,Humidity,Sound
 import serial
 
 ser = serial.Serial('/dev/ttyACM0', 115200)
 
 def publisher():
  while not rospy.is_shutdown():
-  temperature= float(ser.readline().strip())
-  light= float(ser.readline().strip())
-  rospy.loginfo(temperature)
-  pub.publish(temperature)
-  rospy.loginfo(light)
-  pub1.publish(light)
+  for i in range(6):
+    input_data = ser.readline().strip()
+    data = input_data.split(":")[0]
+    value = input_data.split(":")[1]
+    if data == "light":
+      print value
+      light= int(value)
+      rospy.loginfo(light)
+      pub_light.publish(light)
+    elif data == "temperature":
+      print value
+      temperature= float(value)
+      rospy.loginfo(temperature)
+      pub_temperature.publish(temperature)
+    elif data == "acceleration":
+      print value
+      acceleration = Acceleration()
+      acceleration.x_acceleration = float(value.split(" ")[1])
+      acceleration.y_acceleration = float(value.split(" ")[2])
+      acceleration.z_acceleration = float(value.split(" ")[3])
+      rospy.loginfo(acceleration)
+      pub_acceleration.publish(acceleration)
+    elif data == "angle":
+      print value
+      angle = Angle()
+      angle.xy_angle = float(value.split(" ")[1])
+      angle.yz_angle = float(value.split(" ")[2])
+      angle.zx_angle = float(value.split(" ")[3])
+      rospy.loginfo(angle)
+      pub_angle.publish(angle)
+    elif data == "humidity":
+      print value
+      humidity= int(value)
+      rospy.loginfo(humidity)
+      pub_humidity.publish(humidity)
+    elif data == "Sound level":
+      print value
+      sound= float(value)
+      rospy.loginfo(sound)
+      pub_sound.publish(sound)
 
   rospy.sleep(0.5)
 
 
 if __name__ == '__main__':
   try:
-    pub = rospy.Publisher('temperature', Temperature,queue_size=10)
-    pub1 = rospy.Publisher('light', Light,queue_size=10)
+    pub_light = rospy.Publisher('light', Light,queue_size=10)
+    pub_temperature = rospy.Publisher('temperature', Temperature,queue_size=10)
+    pub_acceleration = rospy.Publisher('acceleration', Acceleration,queue_size=10)
+    pub_angle = rospy.Publisher('angle', Angle,queue_size=10)
+    pub_humidity = rospy.Publisher('humidity', Humidity,queue_size=10)
+    pub_sound = rospy.Publisher('sound', Sound,queue_size=10)
     rospy.init_node('publisher')
     publisher()
   except rospy.ROSInterruptException:
