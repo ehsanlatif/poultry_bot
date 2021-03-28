@@ -57,7 +57,7 @@
 #import roslib; roslib.load_manifest('numpy_tutorials') #not sure why I need this
 import rospy
 from std_msgs.msg import String
-from poultry_bot.msg import Temperature,Light,Acceleration,Angle,Humidity,Sound
+from poultry_bot.msg import Proximity,Gesture,Color,Light,Temperature,Pressure,Altitude,Magnetic,Acceleration,Gyro,Humidity,Sound
 import serial
 
 ser = serial.Serial('/dev/ttyACM0', 115200)
@@ -68,17 +68,52 @@ def publisher():
     input_data = ser.readline().strip()
     data = input_data.split(":")[0]
     value = input_data.split(":")[1]
-    if data == "light":
+    if data == "Proximity":
       print value
-      light= int(value)
+      proximity= int(value)
+      rospy.loginfo(proximity)
+      pub_proximity.publish(proximity)
+    elif data == "Gesture":
+      print value
+      gesture= int(value)
+      rospy.loginfo(gesture)
+      pub_gesture.publish(gesture)
+    elif data == "Color":
+      print value
+      color = Color()
+      color.red = int(value.split(" ")[1])
+      color.green = int(value.split(" ")[2])
+      color.blue = int(value.split(" ")[3])
+      rospy.loginfo(color)
+      pub_color.publish(color)
+      #light
+      light= int(value.split(" ")[3])
       rospy.loginfo(light)
       pub_light.publish(light)
-    elif data == "temperature":
+    elif data == "Temperature":
       print value
       temperature= float(value)
       rospy.loginfo(temperature)
       pub_temperature.publish(temperature)
-    elif data == "acceleration":
+    elif data == "Barometric pressure":
+      print value
+      pressure= float(value)
+      rospy.loginfo(pressure)
+      pub_pressure.publish(pressure)
+    elif data == "Altitude":
+      print value
+      altitude= float(value)
+      rospy.loginfo(altitude)
+      pub_altitude.publish(altitude)
+    elif data == "Magnetic":
+      print value
+      magnetic = Magnetic()
+      magnetic.x_magnetic = float(value.split(" ")[1])
+      magnetic.y_magnetic = float(value.split(" ")[2])
+      magnetic.z_magnetic = float(value.split(" ")[3])
+      rospy.loginfo(magnetic)
+      pub_magnetic.publish(magnetic)
+    elif data == "Acceleration":
       print value
       acceleration = Acceleration()
       acceleration.x_acceleration = float(value.split(" ")[1])
@@ -86,22 +121,22 @@ def publisher():
       acceleration.z_acceleration = float(value.split(" ")[3])
       rospy.loginfo(acceleration)
       pub_acceleration.publish(acceleration)
-    elif data == "angle":
+    elif data == "Gyro":
       print value
-      angle = Angle()
-      angle.xy_angle = float(value.split(" ")[1])
-      angle.yz_angle = float(value.split(" ")[2])
-      angle.zx_angle = float(value.split(" ")[3])
-      rospy.loginfo(angle)
-      pub_angle.publish(angle)
-    elif data == "humidity":
+      gyro = Gyro()
+      gyro.x_gyro= float(value.split(" ")[1])
+      gyro.y_gyro = float(value.split(" ")[2])
+      gyro.z_gyro = float(value.split(" ")[3])
+      rospy.loginfo(gyro)
+      pub_gyro.publish(gyro)
+    elif data == "Humidity":
       print value
-      humidity= int(value)
+      humidity= float(value)
       rospy.loginfo(humidity)
       pub_humidity.publish(humidity)
     elif data == "Sound level":
       print value
-      sound= float(value)
+      sound= int(value)
       rospy.loginfo(sound)
       pub_sound.publish(sound)
 
@@ -110,10 +145,16 @@ def publisher():
 
 if __name__ == '__main__':
   try:
+    pub_proximity = rospy.Publisher('proximity', Light,queue_size=10)
+    pub_gesture = rospy.Publisher('gesture', Gesture,queue_size=10)
+    pub_color = rospy.Publisher('color', Color,queue_size=10)
     pub_light = rospy.Publisher('light', Light,queue_size=10)
     pub_temperature = rospy.Publisher('temperature', Temperature,queue_size=10)
+    pub_pressure = rospy.Publisher('pressure', Pressure,queue_size=10)
+    pub_altitude = rospy.Publisher('altitude', Altitude,queue_size=10)
+    pub_magnetic = rospy.Publisher('magnetic', Magnetic,queue_size=10)
     pub_acceleration = rospy.Publisher('acceleration', Acceleration,queue_size=10)
-    pub_angle = rospy.Publisher('angle', Angle,queue_size=10)
+    pub_gyro = rospy.Publisher('gyro', Gyro,queue_size=10)
     pub_humidity = rospy.Publisher('humidity', Humidity,queue_size=10)
     pub_sound = rospy.Publisher('sound', Sound,queue_size=10)
     rospy.init_node('publisher')

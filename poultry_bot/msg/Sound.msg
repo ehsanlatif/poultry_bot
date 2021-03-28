@@ -1,1 +1,1 @@
-float32 sound
+int32 sound

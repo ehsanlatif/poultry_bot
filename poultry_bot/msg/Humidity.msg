@@ -1,1 +1,1 @@
-int32 humidity
+float32 humidity

@@ -50,12 +50,18 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
-   Temperature.msg
-   Light.msg
    Acceleration.msg
-   Angle.msg
-   Humidity.msg
+   Gesture.msg
+   Light.msg
+   Proximity.msg
+   Altitude.msg
+   Gyro.msg
+   Magnetic.msg
    Sound.msg
+   Color.msg
+   Humidity.msg
+   Pressure.msg
+   Temperature.msg
 )
 
 ## Generate services in the 'srv' folder
